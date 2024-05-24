@@ -1,7 +1,8 @@
 package com.example;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -10,7 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class SafeTensorsDeserializer {
 
@@ -18,7 +19,7 @@ public class SafeTensorsDeserializer {
         String vectorsFilePath = "python/output/vectors.safetensors";
         String docidsFilePath = "python/output/docids.safetensors";
         String docidToIdxFilePath = "python/output/docid_to_idx.json";
-        String outputJsonFilePath = "data.json";
+        String outputJsonlFilePath = "data.jsonl";
 
         try {
             // Read and deserialize the SafeTensors files
@@ -28,14 +29,10 @@ public class SafeTensorsDeserializer {
             // Deserialize docid_to_idx.json
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Integer> docidToIdx = objectMapper.readValue(Files.readAllBytes(Paths.get(docidToIdxFilePath)), Map.class);
-            Map<Integer, String> idxToDocid = new HashMap<>();
+            Map<Integer, String> idxToDocid = new LinkedHashMap<>();
             for (Map.Entry<String, Integer> entry : docidToIdx.entrySet()) {
                 idxToDocid.put(entry.getValue(), entry.getKey());
             }
-
-            // Deserialize vectors
-            Map<String, Object> vectorsHeader = parseHeader(vectorsData);
-            double[][] vectors = extractVectors(vectorsData, vectorsHeader);
 
             // Deserialize docids
             Map<String, Object> docidsHeader = parseHeader(docidsData);
@@ -45,15 +42,22 @@ public class SafeTensorsDeserializer {
                 docids[i] = idxToDocid.get(docidIndices[i]);
             }
 
-            // Prepare the output data structure
-            Map<String, Object> outputData = new HashMap<>();
-            outputData.put("vectors", vectors);
-            outputData.put("docids", docids);
+            // Deserialize vectors
+            Map<String, Object> vectorsHeader = parseHeader(vectorsData);
+            double[][] vectors = extractVectors(vectorsData, vectorsHeader);
 
-            // Serialize the output data to JSON and save to file
-            objectMapper.writeValue(new File(outputJsonFilePath), outputData);
+            // Write the output data to JSON Lines file
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputJsonlFilePath))) {
+                for (int i = 0; i < docids.length; i++) {
+                    Map<String, Object> entry = new LinkedHashMap<>();
+                    entry.put("docid", docids[i]);
+                    entry.put("vector", vectors[i]);
+                    writer.write(objectMapper.writeValueAsString(entry));
+                    writer.newLine();
+                }
+            }
 
-            System.out.println("Deserialized data saved to " + outputJsonFilePath);
+            System.out.println("Deserialized data saved to " + outputJsonlFilePath);
 
         } catch (IOException e) {
             e.printStackTrace();

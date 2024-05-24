@@ -1,4 +1,12 @@
-/python/venv
+/python/venv/
+python/input/
+python/output/
+python/__pycache__/
+
+
 **/*.json
-**/*.josnl
+**/*.jsonl
 **/*.safetensors
+
+.vscode/
+
