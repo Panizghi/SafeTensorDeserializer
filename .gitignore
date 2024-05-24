@@ -1,3 +1,4 @@
 /python/venv
-*.json
-*.josnl
+**/*.json
+**/*.josnl
+**/*.safetensors
