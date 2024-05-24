@@ -51,12 +51,25 @@ def verify_data_integrity(original_data, loaded_data, key):
         print(f"Data integrity verified for {key}.")
 
 
+def check_data_type(data, key):
+    """
+    Checks the data type of the loaded data.
 
+    Parameters:
+    - data: The loaded data.
+    - key: The key used to save and thus to load the data.
+    """
+    if not isinstance(data[key], torch.Tensor):
+        print(f"Data type check failed for {key}!")
+        print(f"Expected data type: torch.Tensor, Actual data type: {type(data[key])}")
+        assert False, "Data type mismatch detected."
+    else:
+        print(f"Data type verified for {key}.")
 # Load the original data for integrity check
 # Replace 'load_original_data' with the actual function or method you have to load the original data.
 # If the original data is not available in the memory, you need to load it from where it was saved before conversion to SafeTensors.
 # Initialize lists to hold data
-input_file_path = 'demo/python/input/vectors.part00.jsonl'
+input_file_path = './input/vectors.part00.jsonl'
 vectors = []
 docids = []
 
@@ -69,6 +82,8 @@ with open(input_file_path, 'r') as file:
         
 # For vectors
 original_vectors = vectors  # This function should be defined by you
+print(len(original_vectors))
+print(len(original_vectors[2]))
 time_taken_load_vectors, current_load_vectors, peak_load_vectors = measure_performance(file_path_vectors)
 loaded_vectors = load_file(file_path_vectors)
 # For vectors
@@ -86,3 +101,6 @@ with open(docid_to_idx_path, 'r') as f:
 # and verify the data integrity using verify_data_integrity function
 original_docids_idx = [docid_to_idx[docid] for docid in original_docids]
 verify_data_integrity(original_docids_idx, loaded_docids, 'docids')
+check_data_type(loaded_vectors, 'vectors')
+check_data_type(loaded_docids, 'docids')
+
