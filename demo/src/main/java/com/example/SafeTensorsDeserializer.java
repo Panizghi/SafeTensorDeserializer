@@ -16,22 +16,41 @@ public class SafeTensorsDeserializer {
 
     public static void main(String[] args) {
         String vectorsFilePath = "python/output/vectors.safetensors";
+        String docidsFilePath = "python/output/docids.safetensors";
+        String docidToIdxFilePath = "python/output/docid_to_idx.json";
         String outputJsonFilePath = "data.json";
 
         try {
-            // Read and deserialize the SafeTensors file
+            // Read and deserialize the SafeTensors files
             byte[] vectorsData = Files.readAllBytes(Paths.get(vectorsFilePath));
+            byte[] docidsData = Files.readAllBytes(Paths.get(docidsFilePath));
+            
+            // Deserialize docid_to_idx.json
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Integer> docidToIdx = objectMapper.readValue(Files.readAllBytes(Paths.get(docidToIdxFilePath)), Map.class);
+            Map<Integer, String> idxToDocid = new HashMap<>();
+            for (Map.Entry<String, Integer> entry : docidToIdx.entrySet()) {
+                idxToDocid.put(entry.getValue(), entry.getKey());
+            }
 
             // Deserialize vectors
             Map<String, Object> vectorsHeader = parseHeader(vectorsData);
             double[][] vectors = extractVectors(vectorsData, vectorsHeader);
 
+            // Deserialize docids
+            Map<String, Object> docidsHeader = parseHeader(docidsData);
+            int[] docidIndices = extractDocidIndices(docidsData, docidsHeader);
+            String[] docids = new String[docidIndices.length];
+            for (int i = 0; i < docidIndices.length; i++) {
+                docids[i] = idxToDocid.get(docidIndices[i]);
+            }
+
             // Prepare the output data structure
             Map<String, Object> outputData = new HashMap<>();
             outputData.put("vectors", vectors);
+            outputData.put("docids", docids);
 
             // Serialize the output data to JSON and save to file
-            ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.writeValue(new File(outputJsonFilePath), outputData);
 
             System.out.println("Deserialized data saved to " + outputJsonFilePath);
@@ -91,5 +110,41 @@ public class SafeTensorsDeserializer {
         }
 
         return vectors;
+    }
+
+    private static int[] extractDocidIndices(byte[] data, Map<String, Object> header) {
+        Map<String, Object> docidsInfo = (Map<String, Object>) header.get("docids");
+        String dtype = (String) docidsInfo.get("dtype");
+        List<Integer> shapeList = (List<Integer>) docidsInfo.get("shape");
+        int length = shapeList.get(0);
+        List<Number> dataOffsets = (List<Number>) docidsInfo.get("data_offsets");
+        long begin = dataOffsets.get(0).longValue();
+        long end = dataOffsets.get(1).longValue();
+
+        System.out.println("Docids shape: " + length);
+        System.out.println("Data offsets: " + begin + " to " + end);
+        System.out.println("Data type: " + dtype);
+
+        ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+        // Correctly position the buffer to start reading after the header
+        buffer.position((int) (begin + buffer.getLong(0) + 8));
+
+        int[] docidIndices = new int[length];
+        if (dtype.equals("I64")) {
+            for (int i = 0; i < length; i++) {
+                docidIndices[i] = (int) buffer.getLong();
+            }
+        } else {
+            throw new UnsupportedOperationException("Unsupported data type: " + dtype);
+        }
+
+        // Log the first few docid indices to verify the content
+        System.out.println("First few docid indices:");
+        for (int i = 0; i < Math.min(10, docidIndices.length); i++) {
+            System.out.print(docidIndices[i] + " ");
+        }
+        System.out.println();
+
+        return docidIndices;
     }
 }
