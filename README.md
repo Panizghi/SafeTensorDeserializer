@@ -41,9 +41,8 @@ To run Java programs in interactive mode, ensure that you've correctly configure
 
 ### Verifying and Testing
 Use the following commands to verify and test your project components:
-
-``` cd python 
-```
+  ```cd python
+  ```
 
 - **Verification**:
   ```bash
