@@ -28,23 +28,23 @@ with open(input_file_path, 'r') as file:
         else:
             print(f"Skipped invalid vector entry with docid: {entry['docid']}")
 
-print("type(vectors): ", type(vectors))
-print("type(vector[0]): ", type(vectors[0][0]))
-print("type(docids): ", type(docids))
-print("type(docids[0]): ", type(docids[0][0]))
-print("len(vectors): ", len(vectors))
-print("len(docids): ", len(docids))
+# print("type(vectors): ", type(vectors))
+# print("type(vector[0]): ", type(vectors[0][0]))
+# print("type(docids): ", type(docids))
+# print("type(docids[0]): ", type(docids[0][0]))
+# print("len(vectors): ", len(vectors))
+# print("len(docids): ", len(docids))
 # Convert lists to tensors
 vectors_tensor = torch.tensor(vectors, dtype=torch.float64)
 docid_to_idx = {docid: idx for idx, docid in enumerate(set(docids))}
 idxs = [docid_to_idx[docid] for docid in docids]
 docids_tensor = torch.tensor(idxs, dtype=torch.int64)
 
-print("type(vectors_tensor): ", type(vectors_tensor))
-print("type(docids_tensor): ", type(docids_tensor))
-print("vectors_tensor.shape: ", vectors_tensor.shape)
-print("docids_tensor.shape: ", docids_tensor.shape)
-print("docids_tensor[:10]: ", type(docids_tensor[:10]))
+# print("type(vectors_tensor): ", type(vectors_tensor))
+# print("type(docids_tensor): ", type(docids_tensor))
+# print("vectors_tensor.shape: ", vectors_tensor.shape)
+# print("docids_tensor.shape: ", docids_tensor.shape)
+# print("docids_tensor[:10]: ", type(docids_tensor[:10]))
 
 
 
