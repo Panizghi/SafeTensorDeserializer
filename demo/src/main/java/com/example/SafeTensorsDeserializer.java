@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 public class SafeTensorsDeserializer {
 
     public static void main(String[] args) {
+    
         String vectorsFilePath = "python/output/vectors.safetensors";
         String docidsFilePath = "python/output/docids.safetensors";
         String docidToIdxFilePath = "python/output/docid_to_idx.json";
@@ -28,6 +29,7 @@ public class SafeTensorsDeserializer {
             
             // Deserialize docid_to_idx.json
             ObjectMapper objectMapper = new ObjectMapper();
+            @SuppressWarnings("unchecked")
             Map<String, Integer> docidToIdx = objectMapper.readValue(Files.readAllBytes(Paths.get(docidToIdxFilePath)), Map.class);
             Map<Integer, String> idxToDocid = new LinkedHashMap<>();
             for (Map.Entry<String, Integer> entry : docidToIdx.entrySet()) {
@@ -64,6 +66,7 @@ public class SafeTensorsDeserializer {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static Map<String, Object> parseHeader(byte[] data) throws IOException {
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         long headerSize = buffer.getLong();
@@ -76,11 +79,15 @@ public class SafeTensorsDeserializer {
     }
 
     private static double[][] extractVectors(byte[] data, Map<String, Object> header) {
+        @SuppressWarnings("unchecked")
         Map<String, Object> vectorsInfo = (Map<String, Object>) header.get("vectors");
         String dtype = (String) vectorsInfo.get("dtype");
+        
+        @SuppressWarnings("unchecked")
         List<Integer> shapeList = (List<Integer>) vectorsInfo.get("shape");
         int rows = shapeList.get(0);
         int cols = shapeList.get(1);
+        @SuppressWarnings("unchecked")
         List<Number> dataOffsets = (List<Number>) vectorsInfo.get("data_offsets");
         long begin = dataOffsets.get(0).longValue();
         long end = dataOffsets.get(1).longValue();
@@ -116,11 +123,14 @@ public class SafeTensorsDeserializer {
         return vectors;
     }
 
+    @SuppressWarnings("unchecked")
     private static int[] extractDocidIndices(byte[] data, Map<String, Object> header) {
         Map<String, Object> docidsInfo = (Map<String, Object>) header.get("docids");
         String dtype = (String) docidsInfo.get("dtype");
+        
         List<Integer> shapeList = (List<Integer>) docidsInfo.get("shape");
         int length = shapeList.get(0);
+
         List<Number> dataOffsets = (List<Number>) docidsInfo.get("data_offsets");
         long begin = dataOffsets.get(0).longValue();
         long end = dataOffsets.get(1).longValue();
