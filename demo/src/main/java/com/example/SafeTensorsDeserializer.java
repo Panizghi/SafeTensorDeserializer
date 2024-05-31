@@ -17,10 +17,10 @@ public class SafeTensorsDeserializer {
 
     public static void main(String[] args) {
     
-        String vectorsFilePath = "python/output/vectors.safetensors";
-        String docidsFilePath = "python/output/docids.safetensors";
-        String docidToIdxFilePath = "python/output/docid_to_idx.json";
-        String outputJsonlFilePath = "data.jsonl";
+        String vectorsFilePath = "../python/output/vectors.safetensors";
+        String docidsFilePath = "../python/output/docids.safetensors";
+        String docidToIdxFilePath = "../python/output/docid_to_idx.json";
+        String outputJsonlFilePath = "../data.jsonl";
 
         try {
             // Read and deserialize the SafeTensors files

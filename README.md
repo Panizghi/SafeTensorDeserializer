@@ -31,13 +31,12 @@ python -m json_to_bin
 ```
 
 ### Setting Up Java in Visual Studio Code
-Install the "Language Support for Java(TM) by Red Hat" extension in VS Code. You can do this from the Visual Studio Code Marketplace or directly within VS Code by searching for the extension in the Extensions view (`Ctrl+Shift+X`).
-
-## Running the Project
-``` cd /demo/src/main/java/com/example/ ```
-
-### Running Java Programs in Interactive Mode
-To run Java programs in interactive mode, ensure that you've correctly configured Java in VS Code. Open your Java file, then start the interactive mode by pressing `F5` or selecting `Run > Start Debugging` from the menu.
+```
+cd demo 
+mvn clean install 
+mvn clean package 
+mvn exec:java -Dexec.mainClass="com.example.SafeTensorsDeserializer"
+```
 
 ### Verifying and Testing
 Use the following commands to verify and test your project components:
